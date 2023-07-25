@@ -1,7 +1,9 @@
 import errorIcon from "../images/Error.svg"
 import successIcon from "../images/Success.svg"
 const InfoTooltip = ({ isOpen, onClose, status }) => {
-
+  const handleCLose = () => {
+    onClose(true)
+  }
   const icon = status === 'success' ? successIcon : errorIcon;
   const message = status === 'success' ? 'Вы успешно зарегистрировались!' : 'Что-то пошло не так! Попробуйте ещё раз.';
 
@@ -14,7 +16,7 @@ const InfoTooltip = ({ isOpen, onClose, status }) => {
           className="popup__close"
           type="button"
           aria-label="Закрыть форму"
-          onClick={onClose} />
+          onClick={handleCLose} />
       </div>
     </div>
   )

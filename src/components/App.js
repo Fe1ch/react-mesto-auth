@@ -9,7 +9,7 @@ import ImagePopup from "./ImagePopup";
 import { CurrentUserContext } from "../contexts/CurrentUserContext";
 import { api } from '../utils/api';
 import * as auth from '../utils/authApi'
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import RemoveCardPopup from "./RemoveCardPopup";
 import Login from "./Login";
 import Register from "./Register";
@@ -35,7 +35,7 @@ const App = () => {
   const [cards, setCards] = useState([]);
   const [isPreloading, setIsPreloading] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("jwt"));
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem("jwt")));
   const [email, setEmail] = useState("")
 
   useEffect(() => {
@@ -80,14 +80,18 @@ const App = () => {
     setCardRemove(card)
   }, [])
 
-  const handleNavigateClose = useCallback(() => {
+  const handleNavigateClose = useCallback((isTooltipPopup) => {
     timer.current = setTimeout(() => {
-      navigate('/')
+      if (!isTooltipPopup) {
+        navigate('/')
+      }
       clearTimeout(timer.current)
     }, 300)
   }, [navigate])
 
-  const closeAllPopups = useCallback(() => {
+
+
+  const closeAllPopups = useCallback((isTooltipPopup) => {
     setEditProfilePopupOpen(false)
     setAddPlacePopupOpen(false)
     setEditAvatarPopupOpen(false)
@@ -95,13 +99,13 @@ const App = () => {
     setIsDeleteCardPopupOpen(false)
     setIsInfoTooltipPopupOpen(false)
     setSelectedCard({})
-    handleNavigateClose();
+    handleNavigateClose(isTooltipPopup);
   }, [handleNavigateClose])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        closeAllPopups();
+        closeAllPopups()
       }
     };
 
@@ -178,14 +182,15 @@ const App = () => {
       .finally(() => setIsPreloading(false))
   }
 
-  const onRegister = (password, email) => {
+  const onRegister = (email, password) => {
     auth
-      .register(password, email)
-      .then(() => {
-        setRegistrationStatus('success');
-        setIsInfoTooltipPopupOpen(true);
-        navigate('/sign-in')
-        setTimeout(closeAllPopups, 2500);
+      .register(email, password)
+      .then((data) => {
+        if (data) {
+          setRegistrationStatus('success');
+          setIsInfoTooltipPopupOpen(true);
+          navigate('/sign-in')
+        }
       })
       .catch((err) => {
         setRegistrationStatus('error');
@@ -199,7 +204,7 @@ const App = () => {
       .authorize(password, email)
       .then((data) => {
         localStorage.setItem("jwt", data.token);
-        setIsLoggedIn(localStorage.getItem("jwt"));
+        setIsLoggedIn(true);
         setEmail(email);
         navigate('/')
       })
@@ -216,7 +221,15 @@ const App = () => {
       });
   }
 
-  const handleTokenCheck = () => {
+  const onSignOut = useCallback(() => {
+    localStorage.removeItem("jwt");
+    setIsLoggedIn(false);
+    setEmail("");
+    setIsHamburgerMenu(false)
+    navigate('/sign-in');
+  }, [navigate])
+
+  const handleTokenCheck = useCallback(() => {
     const jwt = localStorage.getItem("jwt");
     if (jwt) {
       auth
@@ -224,12 +237,13 @@ const App = () => {
         .then((data) => {
           if (data) {
             setEmail(data.data.email);
-            setIsLoggedIn('jwt');
+            setIsLoggedIn(true)
           }
         })
         .catch((err) => {
           console.log(err.status);
           if (err.status === 401) {
+            onSignOut()
             return console.log("Переданный токен некорректен ");
           } else if (!jwt) {
             return console.log("Токен не передан или передан не в том формате");
@@ -237,20 +251,12 @@ const App = () => {
           return console.log("error 500");
         });
     }
-  };
+
+  }, [onSignOut]);
 
   useEffect(() => {
     handleTokenCheck();
-  }, []);
-
-
-  const onSignOut = () => {
-    localStorage.removeItem("jwt");
-    setIsLoggedIn('');
-    setEmail("");
-    setIsHamburgerMenu(false)
-    navigate('/sign-in');
-  }
+  }, [handleTokenCheck]);
 
 
 
@@ -276,6 +282,12 @@ const App = () => {
                 onLogin={onLogin}
               />
             } />
+            <Route path="*" element={
+              <Navigate
+                to="/"
+              />
+            }
+            />
             <Route path='/' element={
               <ProtectedRoute
                 element={Main}
