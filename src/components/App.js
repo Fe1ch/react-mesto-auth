@@ -25,6 +25,7 @@ const App = () => {
 
   const [isInfoTooltipPopupOpen, setIsInfoTooltipPopupOpen] = useState(false);
   const [registrationStatus, setRegistrationStatus] = useState(null);
+  const [isHamburgerMenu, setIsHamburgerMenu] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState({});
   const [currentUser, setCurrentUser] = useState({});
@@ -53,6 +54,9 @@ const App = () => {
 
   }, [isLoggedIn])
 
+  const handleToggleMenu = () => {
+    setIsHamburgerMenu(!isHamburgerMenu);
+  }
 
   const handleEditProfileClick = useCallback(() => {
     setEditProfilePopupOpen(true);
@@ -244,6 +248,7 @@ const App = () => {
     localStorage.removeItem("jwt");
     setIsLoggedIn('');
     setEmail("");
+    setIsHamburgerMenu(false)
     navigate('/sign-in');
   }
 
@@ -256,6 +261,8 @@ const App = () => {
           <Header
             email={email}
             onSignOut={onSignOut}
+            isOpen={isHamburgerMenu}
+            OnBurgerClick={handleToggleMenu}
           />
           <Routes>
 

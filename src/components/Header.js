@@ -1,24 +1,20 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import ThemeSwitch from './ThemeSwitch';
 import { Routes, Route, Link } from 'react-router-dom';
 import BurgerMenu from './BurgerMenu';
 import MobileMenu from './MobileMenu';
 
-const Header = ({ email, onSignOut }) => {
-  const [isHamburgerMenu, setIsHamburgerMenu] = useState(false);
-
-  const toggleMenu = () => {
-    setIsHamburgerMenu(!isHamburgerMenu);
-  }
+const Header = ({ email, onSignOut, isOpen, OnBurgerClick }) => {
 
   return (
     <>
-      {isHamburgerMenu && <MobileMenu isOpen={isHamburgerMenu} email={email} onSignOut={onSignOut} />}
+      {isOpen && <MobileMenu isOpen={isOpen} email={email} onSignOut={onSignOut} />}
       <header className="header">
         <div className="header__logo"></div>
         <div className='header__wrapper'>
           <div className='header__profile'>
-            {/* {isLoggedIn ? (
+            {//Пробовал для себя использования хука useLocation не считайте за ошибку
+            /* {isLoggedIn ? (
               <>
                 <p className='header__email'>{email || ""}</p>
                 <Link className="header__link" to="/sign-in" onClick={onSignOut}>
@@ -57,7 +53,7 @@ const Header = ({ email, onSignOut }) => {
                   >
                     Выйти
                   </Link>
-                  <BurgerMenu isOpen={isHamburgerMenu} toggleMenu={toggleMenu} />
+                  <BurgerMenu isOpen={isOpen} OnBurgerClick={OnBurgerClick} />
                 </>
               }
               />

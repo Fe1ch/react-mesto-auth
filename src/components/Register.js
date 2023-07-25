@@ -1,22 +1,13 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom"
 
 const Register = ({ onRegister }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  function handleChangeEmail(e) {
-    setEmail(e.target.value);
-  }
+  const { handleSubmit, register, formState: { isValid, errors } } = useForm({ mode: 'onChange' });
 
-  function handleChangePassword(e) {
-    setPassword(e.target.value);
-  }
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onRegister(email, password)
-  }
-
+  const onSubmit = (data) => {
+    onRegister(data.email, data.password);
+  };
 
   return (
     <div className="auth">
@@ -24,29 +15,48 @@ const Register = ({ onRegister }) => {
       <form
         noValidate
         className="auth__form"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         autoComplete="off"
       >
         <input
-          required
+          {...register("email", {
+            required: "Введите email",
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+              message: "Некорректный адрес email"
+            }
+          })}
           className="auth__input"
           type="email"
           placeholder="Email"
-          value={email}
-          onChange={handleChangeEmail}
         />
+        {errors.email && (
+          <span className="popup__input-error" id="input-avatar-link-error">
+            {errors.email.message}
+          </span>
+        )}
         <input
-          required
-          minLength={8}
+          {...register("password", {
+            required: "Введите пароль",
+            minLength: {
+              value: 8,
+              message: "Минимальная длина пароля - 8 символов"
+            }
+          })}
           className="auth__input"
           type="password"
           placeholder="Пароль"
-          value={password}
-          onChange={handleChangePassword}
         />
+        {errors.password && (
+          <span className="popup__input-error" id="input-avatar-link-error">
+            {errors.password.message}
+          </span>
+        )}
         <button
           className="auth__button"
-          type="submit">
+          type="submit"
+          disabled={!isValid}
+        >
           Зарегистрироваться
         </button>
         <p className="auth__subtitle">
@@ -59,4 +69,5 @@ const Register = ({ onRegister }) => {
     </div>
   )
 }
+
 export default Register
